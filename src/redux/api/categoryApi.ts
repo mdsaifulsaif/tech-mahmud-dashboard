@@ -47,6 +47,13 @@ export const categoryApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ['Categories'],
         }),
+        toggleHomeCategory: builder.mutation({
+            query: (id) => ({
+                url: `/categories/toggle-home/${id}`,
+                method: 'PATCH',
+            }),
+            invalidatesTags: ['Categories'],
+        }),
         updateCategoryOrder: builder.mutation({
             query: (data) => ({
                 url: '/categories/admin/order',
@@ -67,4 +74,5 @@ export const {
     useDeleteCategoryMutation,
     useUpdateCategoryOrderMutation,
     useToggleFeaturedCategoryMutation,
+    useToggleHomeCategoryMutation,
 } = categoryApi;

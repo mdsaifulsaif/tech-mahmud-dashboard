@@ -25,7 +25,14 @@ import {
 } from "@/redux/api/bannerApi";
 import toast from "react-hot-toast";
 
-type PlacementType = "slider" | "side_top" | "side_middle" | "side_bottom";
+type PlacementType =
+  | "slider"
+  | "side_top"
+  | "side_middle"
+  | "side_bottom"
+  | "festive_1"
+  | "festive_2"
+  | "festive_3";
 
 const BannersPage = () => {
   const { data: response, isLoading, refetch } = useGetAdminBannersQuery();
@@ -161,10 +168,19 @@ const BannersPage = () => {
   const sideMiddleBanners = banners.filter((b) => b.placement === "side_middle");
   const sideBottomBanners = banners.filter((b) => b.placement === "side_bottom");
 
+  // Groupings for Gadget Festive / Promo Grid (3 Cards above Trending Now)
+  const festive1Banners = banners.filter((b) => b.placement === "festive_1");
+  const festive2Banners = banners.filter((b) => b.placement === "festive_2");
+  const festive3Banners = banners.filter((b) => b.placement === "festive_3");
+
   const activeSliderBanners = sliderBanners.filter((b) => b.isActive);
   const activeSideTop = sideTopBanners.find((b) => b.isActive);
   const activeSideMiddle = sideMiddleBanners.find((b) => b.isActive);
   const activeSideBottom = sideBottomBanners.find((b) => b.isActive);
+
+  const activeFestive1 = festive1Banners.find((b) => b.isActive);
+  const activeFestive2 = festive2Banners.find((b) => b.isActive);
+  const activeFestive3 = festive3Banners.find((b) => b.isActive);
 
   // Filtered banners for the list
   const filteredBanners = banners.filter((b) => {
@@ -405,11 +421,175 @@ const BannersPage = () => {
         </div>
       </div>
 
+      {/* ===== GADGET FESTIVE / 3 COLLECTION CARDS PREVIEW ===== */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white p-6 rounded-3xl shadow-sm border border-slate-700/60">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-700/60 gap-3">
+          <div>
+            <span className="text-[10px] font-bold tracking-wider text-pink-400 uppercase flex items-center gap-1.5">
+              <FiLayout size={12} /> Gadget Festive / Promo Cards Preview
+            </span>
+            <h2 className="text-base font-bold text-white mt-0.5">
+              Homepage 3-Grid Promotional Banners (Exclusive Collections)
+            </h2>
+          </div>
+          <span className="text-xs text-slate-300">
+            Upload custom banner artwork & link to any category, subcategory, or deal page
+          </span>
+        </div>
+
+        {/* 3 Festive Cards Grid Preview matching user reference */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          {/* Card 1: Left */}
+          <div className="bg-slate-800/90 rounded-2xl border border-slate-700 p-3.5 flex flex-col justify-between min-h-[170px]">
+            <div className="flex items-center justify-between mb-2">
+              <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+                1. Festive Left (Earbuds / Audio)
+              </span>
+              {activeFestive1 ? (
+                <button
+                  onClick={() => handleOpenEdit(activeFestive1)}
+                  className="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-1 font-semibold"
+                >
+                  <FiEdit2 size={11} /> Edit
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleOpenAdd("festive_1")}
+                  className="text-[11px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold"
+                >
+                  <FiPlus size={11} /> Set Banner
+                </button>
+              )}
+            </div>
+
+            {activeFestive1 ? (
+              <div className="relative h-24 rounded-xl overflow-hidden border border-slate-700 bg-slate-950 group">
+                <img
+                  src={activeFestive1.image}
+                  alt={activeFestive1.title || "Festive Left"}
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-2">
+                  <p className="text-[11px] text-white font-medium truncate">
+                    {activeFestive1.title || "Festive 1"} &bull; {activeFestive1.link || "No link"}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div
+                onClick={() => handleOpenAdd("festive_1")}
+                className="h-24 rounded-xl border border-dashed border-slate-700 hover:border-cyan-500 cursor-pointer flex flex-col items-center justify-center text-slate-400 text-xs transition"
+              >
+                <FiPlus size={16} className="mb-1 text-cyan-400" />
+                <span className="text-[11px] font-semibold text-slate-300">Set Festive Banner 1</span>
+                <span className="text-[9px] text-slate-500">(~450x220px)</span>
+              </div>
+            )}
+          </div>
+
+          {/* Card 2: Middle */}
+          <div className="bg-slate-800/90 rounded-2xl border border-slate-700 p-3.5 flex flex-col justify-between min-h-[170px]">
+            <div className="flex items-center justify-between mb-2">
+              <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                2. Festive Middle (Watches)
+              </span>
+              {activeFestive2 ? (
+                <button
+                  onClick={() => handleOpenEdit(activeFestive2)}
+                  className="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-1 font-semibold"
+                >
+                  <FiEdit2 size={11} /> Edit
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleOpenAdd("festive_2")}
+                  className="text-[11px] text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold"
+                >
+                  <FiPlus size={11} /> Set Banner
+                </button>
+              )}
+            </div>
+
+            {activeFestive2 ? (
+              <div className="relative h-24 rounded-xl overflow-hidden border border-slate-700 bg-slate-950 group">
+                <img
+                  src={activeFestive2.image}
+                  alt={activeFestive2.title || "Festive Middle"}
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-2">
+                  <p className="text-[11px] text-white font-medium truncate">
+                    {activeFestive2.title || "Festive 2"} &bull; {activeFestive2.link || "No link"}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div
+                onClick={() => handleOpenAdd("festive_2")}
+                className="h-24 rounded-xl border border-dashed border-slate-700 hover:border-amber-500 cursor-pointer flex flex-col items-center justify-center text-slate-400 text-xs transition"
+              >
+                <FiPlus size={16} className="mb-1 text-amber-400" />
+                <span className="text-[11px] font-semibold text-slate-300">Set Festive Banner 2</span>
+                <span className="text-[9px] text-slate-500">(~450x220px)</span>
+              </div>
+            )}
+          </div>
+
+          {/* Card 3: Right */}
+          <div className="bg-slate-800/90 rounded-2xl border border-slate-700 p-3.5 flex flex-col justify-between min-h-[170px]">
+            <div className="flex items-center justify-between mb-2">
+              <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-400/30">
+                3. Festive Right (Backpacks)
+              </span>
+              {activeFestive3 ? (
+                <button
+                  onClick={() => handleOpenEdit(activeFestive3)}
+                  className="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-1 font-semibold"
+                >
+                  <FiEdit2 size={11} /> Edit
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleOpenAdd("festive_3")}
+                  className="text-[11px] text-rose-400 hover:text-rose-300 flex items-center gap-1 font-semibold"
+                >
+                  <FiPlus size={11} /> Set Banner
+                </button>
+              )}
+            </div>
+
+            {activeFestive3 ? (
+              <div className="relative h-24 rounded-xl overflow-hidden border border-slate-700 bg-slate-950 group">
+                <img
+                  src={activeFestive3.image}
+                  alt={activeFestive3.title || "Festive Right"}
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-2">
+                  <p className="text-[11px] text-white font-medium truncate">
+                    {activeFestive3.title || "Festive 3"} &bull; {activeFestive3.link || "No link"}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div
+                onClick={() => handleOpenAdd("festive_3")}
+                className="h-24 rounded-xl border border-dashed border-slate-700 hover:border-rose-500 cursor-pointer flex flex-col items-center justify-center text-slate-400 text-xs transition"
+              >
+                <FiPlus size={16} className="mb-1 text-rose-400" />
+                <span className="text-[11px] font-semibold text-slate-300">Set Festive Banner 3</span>
+                <span className="text-[9px] text-slate-500">(~450x220px)</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* ===== FILTER TABS & BANNER LIST ===== */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         {/* Tabs */}
         <div className="p-4 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
+          <div className="flex flex-wrap items-center gap-1 bg-gray-100 p-1 rounded-xl">
             <button
               onClick={() => setActiveTab("all")}
               className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
@@ -459,6 +639,36 @@ const BannersPage = () => {
               }`}
             >
               Side Bottom ({sideBottomBanners.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("festive_1")}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                activeTab === "festive_1"
+                  ? "bg-white text-cyan-600 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Festive 1 ({festive1Banners.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("festive_2")}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                activeTab === "festive_2"
+                  ? "bg-white text-amber-600 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Festive 2 ({festive2Banners.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("festive_3")}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                activeTab === "festive_3"
+                  ? "bg-white text-rose-600 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Festive 3 ({festive3Banners.length})
             </button>
           </div>
 
@@ -528,6 +738,21 @@ const BannersPage = () => {
                         {currentPlacement === "side_bottom" && (
                           <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
                             Side Bottom (Right 3)
+                          </span>
+                        )}
+                        {currentPlacement === "festive_1" && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200">
+                            Festive Left (Card 1)
+                          </span>
+                        )}
+                        {currentPlacement === "festive_2" && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                            Festive Middle (Card 2)
+                          </span>
+                        )}
+                        {currentPlacement === "festive_3" && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                            Festive Right (Card 3)
                           </span>
                         )}
 
@@ -732,6 +957,87 @@ const BannersPage = () => {
                     </p>
                     <span className="text-[9px] font-mono text-purple-600 mt-2 font-bold">
                       Rec: ~450x160 px
+                    </span>
+                  </label>
+
+                  {/* Option 5: Festive 1 (Left) */}
+                  <label
+                    className={`p-3 rounded-2xl border cursor-pointer transition flex flex-col justify-between ${
+                      placement === "festive_1"
+                        ? "border-cyan-600 bg-cyan-50/50 ring-2 ring-cyan-600/20"
+                        : "border-gray-200 hover:border-gray-300 bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-bold text-gray-900">Festive Card 1 (Left)</span>
+                      <input
+                        type="radio"
+                        name="placement"
+                        value="festive_1"
+                        checked={placement === "festive_1"}
+                        onChange={() => setPlacement("festive_1")}
+                        className="text-cyan-600"
+                      />
+                    </div>
+                    <p className="text-[10px] text-gray-500 leading-tight">
+                      Homepage Festive Left card (e.g. Earbuds / Audio collection).
+                    </p>
+                    <span className="text-[9px] font-mono text-cyan-600 mt-2 font-bold">
+                      Rec: ~450x220 px
+                    </span>
+                  </label>
+
+                  {/* Option 6: Festive 2 (Middle) */}
+                  <label
+                    className={`p-3 rounded-2xl border cursor-pointer transition flex flex-col justify-between ${
+                      placement === "festive_2"
+                        ? "border-amber-600 bg-amber-50/50 ring-2 ring-amber-600/20"
+                        : "border-gray-200 hover:border-gray-300 bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-bold text-gray-900">Festive Card 2 (Middle)</span>
+                      <input
+                        type="radio"
+                        name="placement"
+                        value="festive_2"
+                        checked={placement === "festive_2"}
+                        onChange={() => setPlacement("festive_2")}
+                        className="text-amber-600"
+                      />
+                    </div>
+                    <p className="text-[10px] text-gray-500 leading-tight">
+                      Homepage Festive Middle card (e.g. Watches collection).
+                    </p>
+                    <span className="text-[9px] font-mono text-amber-600 mt-2 font-bold">
+                      Rec: ~450x220 px
+                    </span>
+                  </label>
+
+                  {/* Option 7: Festive 3 (Right) */}
+                  <label
+                    className={`p-3 rounded-2xl border cursor-pointer transition flex flex-col justify-between ${
+                      placement === "festive_3"
+                        ? "border-rose-600 bg-rose-50/50 ring-2 ring-rose-600/20"
+                        : "border-gray-200 hover:border-gray-300 bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-bold text-gray-900">Festive Card 3 (Right)</span>
+                      <input
+                        type="radio"
+                        name="placement"
+                        value="festive_3"
+                        checked={placement === "festive_3"}
+                        onChange={() => setPlacement("festive_3")}
+                        className="text-rose-600"
+                      />
+                    </div>
+                    <p className="text-[10px] text-gray-500 leading-tight">
+                      Homepage Festive Right card (e.g. Backpacks / Luggage).
+                    </p>
+                    <span className="text-[9px] font-mono text-rose-600 mt-2 font-bold">
+                      Rec: ~450x220 px
                     </span>
                   </label>
                 </div>

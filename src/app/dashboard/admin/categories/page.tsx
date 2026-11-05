@@ -17,6 +17,7 @@ import {
     useGetCategoriesQuery,
     useDeleteCategoryMutation,
     useToggleFeaturedCategoryMutation,
+    useToggleHomeCategoryMutation,
 } from '@/redux/api/categoryApi';
 import { toast } from 'react-hot-toast';
 
@@ -26,6 +27,7 @@ const CategoriesPage = () => {
     const [limit, setLimit] = useState(10);
     const [statusFilter, setStatusFilter] = useState('');
     const [togglingId, setTogglingId] = useState<string | null>(null);
+    const [togglingHomeId, setTogglingHomeId] = useState<string | null>(null);
 
     const { data: categoriesData, isLoading, refetch } = useGetCategoriesQuery({
         page,
@@ -35,6 +37,7 @@ const CategoriesPage = () => {
     });
     const [deleteCategory] = useDeleteCategoryMutation();
     const [toggleFeatured] = useToggleFeaturedCategoryMutation();
+    const [toggleHomeCategory] = useToggleHomeCategoryMutation();
 
     const categories = categoriesData?.data || [];
     const meta = categoriesData?.meta || { page: 1, limit: 10, total: 0, totalPage: 1 };
@@ -48,6 +51,18 @@ const CategoriesPage = () => {
             toast.error(error?.data?.message || 'Failed to update featured status');
         } finally {
             setTogglingId(null);
+        }
+    };
+
+    const handleToggleHome = async (id: string, currentStatus: boolean, name: string) => {
+        setTogglingHomeId(id);
+        try {
+            await toggleHomeCategory(id).unwrap();
+            toast.success(`${name} is now ${!currentStatus ? 'added to Home Landing Cards' : 'removed from Home Landing Cards'}`);
+        } catch (error: any) {
+            toast.error(error?.data?.message || 'Failed to update Home Card status');
+        } finally {
+            setTogglingHomeId(null);
         }
     };
 
@@ -138,6 +153,7 @@ const CategoriesPage = () => {
                                     <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
                                     <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Products</th>
                                     <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Featured on Home</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-indigo-600 uppercase tracking-wider text-center">Home 3-Cards Promo</th>
                                     <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
@@ -199,6 +215,31 @@ const CategoriesPage = () => {
                                                 </span>
                                                 <span className={`text-xs font-bold ${cat.isFeatured ? 'text-[#FF5A5A]' : 'text-gray-400'}`}>
                                                     {cat.isFeatured ? 'Featured' : 'Normal'}
+                                                </span>
+                                            </button>
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <button
+                                                type="button"
+                                                disabled={togglingHomeId === cat._id}
+                                                onClick={() => handleToggleHome(cat._id, !!cat.showInHome, cat.name)}
+                                                className="inline-flex items-center gap-2 group cursor-pointer select-none"
+                                                title={cat.showInHome ? "Click to remove from Home 3-Cards promo" : "Click to show on Home 3-Cards promo"}
+                                            >
+                                                <span
+                                                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                                        cat.showInHome ? 'bg-indigo-600' : 'bg-gray-200'
+                                                    } ${togglingHomeId === cat._id ? 'opacity-50 cursor-wait' : ''}`}
+                                                >
+                                                    <span
+                                                        aria-hidden="true"
+                                                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
+                                                            cat.showInHome ? 'translate-x-5' : 'translate-x-0'
+                                                        }`}
+                                                    />
+                                                </span>
+                                                <span className={`text-xs font-bold ${cat.showInHome ? 'text-indigo-600' : 'text-gray-400'}`}>
+                                                    {cat.showInHome ? 'Home Card' : 'Normal'}
                                                 </span>
                                             </button>
                                         </td>

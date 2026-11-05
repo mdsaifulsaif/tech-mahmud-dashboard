@@ -241,7 +241,7 @@ const CategoryFormInner = () => {
                         <div className="space-y-4 pt-2">
                             <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" name="isFeatured" checked={formData.isFeatured} onChange={handleChange} /> Featured Category</label>
                             <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" name="showInMenu" checked={formData.showInMenu} onChange={handleChange} /> Show in Menu</label>
-                            <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" name="showInHome" checked={formData.showInHome} onChange={handleChange} /> Show on Homepage</label>
+                            <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" name="showInHome" checked={formData.showInHome} onChange={handleChange} /> Show on Home 3-Cards Promo</label>
                         </div>
                     </div>
                 </div>
