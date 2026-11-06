@@ -47,6 +47,13 @@ export const categoryApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ['Categories'],
         }),
+        toggleTrendingCategory: builder.mutation({
+            query: (id) => ({
+                url: `/categories/toggle-trending/${id}`,
+                method: 'PATCH',
+            }),
+            invalidatesTags: ['Categories'],
+        }),
         toggleHomeCategory: builder.mutation({
             query: (id) => ({
                 url: `/categories/toggle-home/${id}`,
@@ -74,5 +81,6 @@ export const {
     useDeleteCategoryMutation,
     useUpdateCategoryOrderMutation,
     useToggleFeaturedCategoryMutation,
+    useToggleTrendingCategoryMutation,
     useToggleHomeCategoryMutation,
 } = categoryApi;

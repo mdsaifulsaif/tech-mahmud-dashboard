@@ -19,7 +19,6 @@ import {
   FiMenu,
   FiX,
   FiBell,
-  FiSearch,
   FiChevronDown,
   FiDroplet,
   FiCreditCard,
@@ -37,6 +36,7 @@ import {
   FiRepeat,
   FiTarget,
   FiMessageSquare,
+  FiLayout,
 } from "react-icons/fi";
 import { useSocket } from "@/lib/socket";
 
@@ -84,6 +84,17 @@ const menuItems = [
   { name: "Reviews", href: "/dashboard/admin/reviews", icon: FiStar, badge: "5", badgeColor: "bg-yellow-500" },
   { name: "Coupons", href: "/dashboard/admin/coupons", icon: FiTag, badge: null as string | null },
   { name: "Hero Banners", href: "/dashboard/admin/banners", icon: FiImage, badge: null as string | null },
+  {
+    name: "Promotional Banners",
+    href: "/dashboard/admin/promotional",
+    icon: FiLayout,
+    badge: null as string | null,
+    submenu: [
+      { name: "Promo Banners (4 Slots)", href: "/dashboard/admin/promotional/3-slots" },
+      { name: "Dual Banners (2 Slots)", href: "/dashboard/admin/promotional/2-slots" },
+      { name: "Bottom Promo Grid (2 Rows / 6 Slots)", href: "/dashboard/admin/promotional/bottom-promos" },
+    ],
+  },
   { name: "Marketing & Pixels", href: "/dashboard/admin/marketing", icon: FiTarget, badge: "CAPI", badgeColor: "bg-purple-600" },
   { name: "Live Chat", href: "/dashboard/admin/chat", icon: FiMessageSquare, badge: "Live" as string | null, badgeColor: "bg-emerald-600" },
   { name: "Analytics", href: "/dashboard/admin/analytics", icon: FiBarChart2, badge: null as string | null },
@@ -108,8 +119,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const router = useRouter();
   const notificationRef = useRef<HTMLDivElement>(null);
 
-  // ✅ hardcoded state এর বদলে real socket notification hook
-  const { isConnected, notifications, unreadCount, markAsRead, markAllAsRead } = useSocket();
+  // ✅ Socket notification hook
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useSocket();
 
   useEffect(() => {
     setIsMounted(true);
@@ -118,6 +129,18 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   useEffect(() => {
     if (isMounted) {
       setMobileMenuOpen(false);
+      const activeParent = menuItems.find(
+        (item) =>
+          "submenu" in item &&
+          (item as any).submenu?.some((sub: any) =>
+            sub.href === "/dashboard/admin/promotional/3-slots"
+              ? pathname === sub.href || pathname === "/dashboard/admin/promotional"
+              : pathname === sub.href || pathname.startsWith(sub.href + "/")
+          )
+      );
+      if (activeParent) {
+        setExpandedMenu(activeParent.name);
+      }
     }
   }, [pathname, isMounted]);
 
@@ -235,7 +258,7 @@ const handleLogout = async () => {
           </button>
         </div>
 
-        <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100vh-10rem)]" style={{ scrollbarWidth: "thin" }}>
+        <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100vh-10rem)] sidebar-scrollbar">
           {sidebarOpen && (
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-4 mb-3">Main Menu</p>
           )}
@@ -286,19 +309,24 @@ const handleLogout = async () => {
 
                 {hasSubmenu && isExpanded && sidebarOpen && (
                   <div className="mt-1 ml-4 pl-4 border-l border-gray-700 space-y-1">
-                    {(item as any).submenu.map((sub: any) => (
-                      <Link
-                        key={sub.name}
-                        href={sub.href}
-                        className={`block px-4 py-2 rounded-md text-sm transition-colors ${
-                          pathname === sub.href
-                            ? "text-[#2563EB] bg-[#2563EB]/10"
-                            : "text-gray-400 hover:text-white hover:bg-white/5"
-                        }`}
-                      >
-                        {sub.name}
-                      </Link>
-                    ))}
+                    {(item as any).submenu.map((sub: any) => {
+                      const isSubActive =
+                        pathname === sub.href ||
+                        (sub.href === "/dashboard/admin/promotional/3-slots" && pathname === "/dashboard/admin/promotional");
+                      return (
+                        <Link
+                          key={sub.name}
+                          href={sub.href}
+                          className={`block px-4 py-2 rounded-md text-sm transition-colors ${
+                            isSubActive
+                              ? "text-[#2563EB] bg-[#2563EB]/10 font-semibold"
+                              : "text-gray-400 hover:text-white hover:bg-white/5"
+                          }`}
+                        >
+                          {sub.name}
+                        </Link>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -344,14 +372,6 @@ const handleLogout = async () => {
             <button onClick={() => setMobileMenuOpen(true)} className="lg:hidden p-2 hover:bg-gray-100 rounded-md">
               <FiMenu size={24} />
             </button>
-            <div className="hidden md:flex items-center gap-2 bg-gray-100 rounded-md px-4 py-2.5">
-              <FiSearch className="text-gray-400" size={18} />
-              <input
-                type="text"
-                placeholder="Search orders, products..."
-                className="bg-transparent outline-none w-72 text-sm"
-              />
-            </div>
           </div>
 
           <div className="flex items-center gap-3">
@@ -363,18 +383,6 @@ const handleLogout = async () => {
               <FiGlobe size={16} />
               Visit Store
             </Link>
-
-            {/* ✅ Connection status — connect হচ্ছে কিনা তাৎক্ষণিক বোঝার জন্য */}
-            <div
-              className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full ${
-                isConnected ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"
-              }`}
-            >
-              <span className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-500 animate-pulse" : "bg-red-500"}`} />
-              <span className={`text-xs font-medium ${isConnected ? "text-green-700" : "text-red-700"}`}>
-                {isConnected ? "Live" : "Offline"}
-              </span>
-            </div>
 
             {/* Notifications */}
             <div className="relative" ref={notificationRef}>

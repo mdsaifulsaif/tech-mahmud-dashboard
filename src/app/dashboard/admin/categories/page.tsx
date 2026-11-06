@@ -17,6 +17,7 @@ import {
     useGetCategoriesQuery,
     useDeleteCategoryMutation,
     useToggleFeaturedCategoryMutation,
+    useToggleTrendingCategoryMutation,
     useToggleHomeCategoryMutation,
 } from '@/redux/api/categoryApi';
 import { toast } from 'react-hot-toast';
@@ -27,7 +28,7 @@ const CategoriesPage = () => {
     const [limit, setLimit] = useState(10);
     const [statusFilter, setStatusFilter] = useState('');
     const [togglingId, setTogglingId] = useState<string | null>(null);
-    const [togglingHomeId, setTogglingHomeId] = useState<string | null>(null);
+    const [togglingTrendingId, setTogglingTrendingId] = useState<string | null>(null);
 
     const { data: categoriesData, isLoading, refetch } = useGetCategoriesQuery({
         page,
@@ -37,7 +38,7 @@ const CategoriesPage = () => {
     });
     const [deleteCategory] = useDeleteCategoryMutation();
     const [toggleFeatured] = useToggleFeaturedCategoryMutation();
-    const [toggleHomeCategory] = useToggleHomeCategoryMutation();
+    const [toggleTrending] = useToggleTrendingCategoryMutation();
 
     const categories = categoriesData?.data || [];
     const meta = categoriesData?.meta || { page: 1, limit: 10, total: 0, totalPage: 1 };
@@ -54,15 +55,15 @@ const CategoriesPage = () => {
         }
     };
 
-    const handleToggleHome = async (id: string, currentStatus: boolean, name: string) => {
-        setTogglingHomeId(id);
+    const handleToggleTrending = async (id: string, currentStatus: boolean, name: string) => {
+        setTogglingTrendingId(id);
         try {
-            await toggleHomeCategory(id).unwrap();
-            toast.success(`${name} is now ${!currentStatus ? 'added to Home Landing Cards' : 'removed from Home Landing Cards'}`);
+            await toggleTrending(id).unwrap();
+            toast.success(`${name} is now ${!currentStatus ? 'shown in Trending Products' : 'removed from Trending Products'}`);
         } catch (error: any) {
-            toast.error(error?.data?.message || 'Failed to update Home Card status');
+            toast.error(error?.data?.message || 'Failed to update trending status');
         } finally {
-            setTogglingHomeId(null);
+            setTogglingTrendingId(null);
         }
     };
 
@@ -153,7 +154,7 @@ const CategoriesPage = () => {
                                     <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
                                     <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Products</th>
                                     <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Featured on Home</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-indigo-600 uppercase tracking-wider text-center">Home 3-Cards Promo</th>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center">Trending on Home</th>
                                     <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
@@ -221,25 +222,25 @@ const CategoriesPage = () => {
                                         <td className="px-6 py-4 text-center">
                                             <button
                                                 type="button"
-                                                disabled={togglingHomeId === cat._id}
-                                                onClick={() => handleToggleHome(cat._id, !!cat.showInHome, cat.name)}
+                                                disabled={togglingTrendingId === cat._id}
+                                                onClick={() => handleToggleTrending(cat._id, !!cat.isTrending, cat.name)}
                                                 className="inline-flex items-center gap-2 group cursor-pointer select-none"
-                                                title={cat.showInHome ? "Click to remove from Home 3-Cards promo" : "Click to show on Home 3-Cards promo"}
+                                                title={cat.isTrending ? "Click to remove from homepage trending section" : "Click to show on homepage trending section"}
                                             >
                                                 <span
                                                     className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                                        cat.showInHome ? 'bg-indigo-600' : 'bg-gray-200'
-                                                    } ${togglingHomeId === cat._id ? 'opacity-50 cursor-wait' : ''}`}
+                                                        cat.isTrending ? 'bg-[#2563EB]' : 'bg-gray-200'
+                                                    } ${togglingTrendingId === cat._id ? 'opacity-50 cursor-wait' : ''}`}
                                                 >
                                                     <span
                                                         aria-hidden="true"
                                                         className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                                                            cat.showInHome ? 'translate-x-5' : 'translate-x-0'
+                                                            cat.isTrending ? 'translate-x-5' : 'translate-x-0'
                                                         }`}
                                                     />
                                                 </span>
-                                                <span className={`text-xs font-bold ${cat.showInHome ? 'text-indigo-600' : 'text-gray-400'}`}>
-                                                    {cat.showInHome ? 'Home Card' : 'Normal'}
+                                                <span className={`text-xs font-bold ${cat.isTrending ? 'text-[#2563EB]' : 'text-gray-400'}`}>
+                                                    {cat.isTrending ? 'Trending' : 'Normal'}
                                                 </span>
                                             </button>
                                         </td>

@@ -39,6 +39,7 @@ const CategoryFormInner = () => {
         parentCategory: '',
         status: 'active',
         isFeatured: false,
+        isTrending: false,
         showInMenu: true,
         showInHome: true,
         order: 0,
@@ -60,6 +61,7 @@ const CategoryFormInner = () => {
                 parentCategory: cat.parentCategory?._id || cat.parentCategory || '',
                 status: cat.status || 'active',
                 isFeatured: !!cat.isFeatured,
+                isTrending: !!cat.isTrending,
                 showInMenu: !!cat.showInMenu,
                 showInHome: !!cat.showInHome,
                 order: cat.order || 0,
@@ -247,8 +249,8 @@ const CategoryFormInner = () => {
                         </div>
                         <div className="space-y-4 pt-2">
                             <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" name="isFeatured" checked={formData.isFeatured} onChange={handleChange} /> Featured Category</label>
+                            <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" name="isTrending" checked={formData.isTrending} onChange={handleChange} /> Show in Trending Products</label>
                             <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" name="showInMenu" checked={formData.showInMenu} onChange={handleChange} /> Show in Menu</label>
-                            <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" name="showInHome" checked={formData.showInHome} onChange={handleChange} /> Show on Home 3-Cards Promo</label>
                         </div>
                     </div>
                 </div>

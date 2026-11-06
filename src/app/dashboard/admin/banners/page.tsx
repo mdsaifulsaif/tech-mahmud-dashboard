@@ -23,6 +23,7 @@ import {
   useDeleteBannerMutation,
   IBanner,
 } from "@/redux/api/bannerApi";
+import { useGetCategoriesQuery } from "@/redux/api/categoryApi";
 import toast from "react-hot-toast";
 
 type PlacementType =
@@ -36,6 +37,9 @@ type PlacementType =
 
 const BannersPage = () => {
   const { data: response, isLoading, refetch } = useGetAdminBannersQuery();
+  const { data: catResponse } = useGetCategoriesQuery({ limit: 100 });
+  const categories: any[] = catResponse?.data || [];
+
   const [createBanner, { isLoading: isCreating }] = useCreateBannerMutation();
   const [updateBanner, { isLoading: isUpdating }] = useUpdateBannerMutation();
   const [deleteBanner, { isLoading: isDeleting }] = useDeleteBannerMutation();
@@ -48,7 +52,9 @@ const BannersPage = () => {
 
   // Form State
   const [title, setTitle] = useState("");
-  const [link, setLink] = useState("");
+  const [linkType, setLinkType] = useState<"category" | "custom">("category");
+  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [customLink, setCustomLink] = useState("");
   const [placement, setPlacement] = useState<PlacementType>("slider");
   const [order, setOrder] = useState<number>(0);
   const [isActive, setIsActive] = useState<boolean>(true);
@@ -58,7 +64,9 @@ const BannersPage = () => {
 
   const resetForm = () => {
     setTitle("");
-    setLink("");
+    setLinkType("category");
+    setSelectedCategoryId("");
+    setCustomLink("");
     setPlacement("slider");
     setOrder(0);
     setIsActive(true);
@@ -81,13 +89,42 @@ const BannersPage = () => {
   const handleOpenEdit = (banner: IBanner) => {
     setEditingBanner(banner);
     setTitle(banner.title || "");
-    setLink(banner.link || "");
     setPlacement((banner.placement as PlacementType) || "slider");
     setOrder(banner.order ?? 0);
     setIsActive(banner.isActive);
     setImageUrl(banner.image || "");
     setSelectedFile(null);
     setFilePreview(banner.image || "");
+
+    // Check if category or custom link is assigned
+    if (banner.categoryID) {
+      setLinkType("category");
+      const cId =
+        typeof banner.categoryID === "object"
+          ? banner.categoryID._id
+          : banner.categoryID;
+      setSelectedCategoryId(cId || "");
+      setCustomLink("");
+    } else if (banner.categorySlug) {
+      setLinkType("category");
+      const found = categories.find((c) => c.slug === banner.categorySlug);
+      setSelectedCategoryId(found?._id || "");
+      setCustomLink("");
+    } else if (
+      banner.link &&
+      banner.link.startsWith("/") &&
+      categories.some((c) => `/${c.slug}` === banner.link)
+    ) {
+      setLinkType("category");
+      const found = categories.find((c) => `/${c.slug}` === banner.link);
+      setSelectedCategoryId(found?._id || "");
+      setCustomLink("");
+    } else {
+      setLinkType("custom");
+      setCustomLink(banner.link || "");
+      setSelectedCategoryId("");
+    }
+
     setIsModalOpen(true);
   };
 
@@ -107,10 +144,34 @@ const BannersPage = () => {
       return;
     }
 
+    // Determine final destination link and category
+    let finalLink = "";
+    let finalCatId: string | null = null;
+    let finalCatSlug: string = "";
+
+    if (linkType === "category") {
+      if (selectedCategoryId) {
+        const cat = categories.find((c) => c._id === selectedCategoryId);
+        if (cat) {
+          finalCatId = cat._id;
+          finalCatSlug = cat.slug;
+          finalLink = `/${cat.slug}`;
+        }
+      }
+    } else {
+      finalLink = customLink.trim();
+    }
+
     try {
       const formData = new FormData();
       if (title.trim()) formData.append("title", title.trim());
-      if (link.trim()) formData.append("link", link.trim());
+      formData.append("link", finalLink);
+      if (finalCatId) {
+        formData.append("categoryID", finalCatId);
+      } else {
+        formData.append("categoryID", "");
+      }
+      formData.append("categorySlug", finalCatSlug);
       formData.append("placement", placement);
       formData.append("order", String(order));
       formData.append("isActive", String(isActive));
@@ -775,7 +836,13 @@ const BannersPage = () => {
                         {banner.title || "Untitled Banner"}
                       </h3>
 
-                      {banner.link ? (
+                      {banner.categorySlug || (typeof banner.categoryID === "object" && banner.categoryID?.name) ? (
+                        <p className="text-xs text-emerald-700 flex items-center gap-1.5 truncate font-semibold">
+                          <FiLink size={12} className="shrink-0 text-emerald-600" />
+                          <span>Category: {typeof banner.categoryID === "object" ? banner.categoryID?.name : banner.categorySlug}</span>
+                          <span className="text-[10px] text-gray-400 font-mono">({banner.link})</span>
+                        </p>
+                      ) : banner.link ? (
                         <p className="text-xs text-blue-600 flex items-center gap-1 truncate font-mono">
                           <FiLink size={12} className="shrink-0" />
                           <span>{banner.link}</span>
@@ -1120,18 +1187,81 @@ const BannersPage = () => {
                 />
               </div>
 
-              {/* Redirect Link */}
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-700 block">
-                  Redirect Link (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={link}
-                  onChange={(e) => setLink(e.target.value)}
-                  placeholder="e.g. /shop?category=gadget or /offers"
-                  className="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-blue-600 focus:bg-white transition font-mono"
-                />
+              {/* Destination Click Target (Category Dropdown or Custom Link) */}
+              <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-gray-900 flex items-center gap-1.5">
+                    <FiLink className="text-blue-600" /> Target Destination (On Banner Click)
+                  </span>
+                  <div className="flex items-center gap-3 text-xs">
+                    <label className="flex items-center gap-1.5 cursor-pointer font-bold text-gray-700">
+                      <input
+                        type="radio"
+                        name="heroLinkType"
+                        checked={linkType === "category"}
+                        onChange={() => setLinkType("category")}
+                        className="text-blue-600 focus:ring-0"
+                      />
+                      <span>Category</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 cursor-pointer font-bold text-gray-700">
+                      <input
+                        type="radio"
+                        name="heroLinkType"
+                        checked={linkType === "custom"}
+                        onChange={() => setLinkType("custom")}
+                        className="text-blue-600 focus:ring-0"
+                      />
+                      <span>Custom Link</span>
+                    </label>
+                  </div>
+                </div>
+
+                {linkType === "category" ? (
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-gray-700">
+                      Select Target Category:
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={selectedCategoryId}
+                        onChange={(e) => setSelectedCategoryId(e.target.value)}
+                        className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:outline-none focus:border-blue-600"
+                      >
+                        <option value="">-- Choose a Category --</option>
+                        {categories.map((cat: any) => (
+                          <option key={cat._id} value={cat._id}>
+                            {cat.name} ({cat.slug}) {cat.productCount ? `— ${cat.productCount} items` : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {selectedCategoryId && (
+                      <p className="text-[11px] text-blue-700 font-medium">
+                        ✓ Clicking this banner will navigate to:{" "}
+                        <code className="px-1.5 py-0.5 rounded bg-blue-100 font-bold">
+                          /{categories.find((c) => c._id === selectedCategoryId)?.slug}
+                        </code>
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-gray-700">
+                      Paste Custom Link / Route:
+                    </label>
+                    <input
+                      type="text"
+                      value={customLink}
+                      onChange={(e) => setCustomLink(e.target.value)}
+                      placeholder="e.g. /shop, /offers, /fashion"
+                      className="w-full px-3 py-2 text-xs bg-white border border-gray-200 rounded-xl font-mono font-semibold text-gray-900 focus:outline-none focus:border-blue-600"
+                    />
+                    <p className="text-[11px] text-gray-400">
+                      Enter any internal path (e.g. <code>/shop</code>) or external URL.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Order & Active Switch in 2 columns */}
