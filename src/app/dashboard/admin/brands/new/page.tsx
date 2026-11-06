@@ -307,6 +307,7 @@ import {
     useGetBrandByIdQuery,
 } from '@/redux/api/brandApi';
 import { toast } from 'react-hot-toast';
+import { cleanSlug } from '@/lib/slugify';
 
 const BrandFormInner = () => {
     const router = useRouter();
@@ -373,7 +374,12 @@ const BrandFormInner = () => {
         if (name === 'name' && !isEditing) {
             setFormData(prev => ({
                 ...prev,
-                slug: value.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
+                slug: cleanSlug(value)
+            }));
+        } else if (name === 'slug') {
+            setFormData(prev => ({
+                ...prev,
+                slug: cleanSlug(value)
             }));
         }
     };
@@ -382,9 +388,10 @@ const BrandFormInner = () => {
         e.preventDefault();
 
         const data = new FormData();
+        const safeSlug = cleanSlug(formData.slug || formData.name);
 
         // সব টেক্সট ফিল্ড যোগ করা
-        Object.entries(formData).forEach(([key, value]) => {
+        Object.entries({ ...formData, slug: safeSlug }).forEach(([key, value]) => {
             if (key === 'image') {
                 if (value instanceof File) {
                     data.append('logo', value);        // backend এ logo হিসেবে পাঠানো

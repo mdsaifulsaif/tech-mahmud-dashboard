@@ -175,7 +175,7 @@ export default function SettingsPage() {
         <div className="p-8">
            {activeTab === 'general' && <GeneralSettings />}
           {activeTab === 'shipping' && (
-            <ShippingSettings shippingConfigs={shippingConfigs} setShippingConfigs={setShippingConfigs} />
+            <ShippingSettings />
           )}
           {activeTab === 'payment' && <PaymentSettings />}
            {activeTab === 'notifications' && <NotificationSettings />}          {activeTab === 'security' && <SecuritySettings />}

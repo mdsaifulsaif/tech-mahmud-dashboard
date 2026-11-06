@@ -12,6 +12,7 @@ import { useGetCategoriesQuery } from "@/redux/api/categoryApi";
 import { useGetUnitsQuery } from "@/redux/api/unitApi";
 import { useGetBrandsQuery } from "@/redux/api/brandApi";
 import { toast } from "react-hot-toast";
+import { cleanSlug } from "@/lib/slugify";
 
 import ProductFormHeader from "../_components/ProductFormHeader";
 import ProductTypeToggle from "../_components/ProductTypeToggle";
@@ -158,10 +159,12 @@ const ProductFormInner = () => {
     if (name === "name" && !isEditing) {
       setFormData((prev: any) => ({
         ...prev,
-        slug: value
-          .toLowerCase()
-          .replace(/ /g, "-")
-          .replace(/[^\w-]+/g, ""),
+        slug: cleanSlug(value),
+      }));
+    } else if (name === "slug") {
+      setFormData((prev: any) => ({
+        ...prev,
+        slug: cleanSlug(value),
       }));
     }
   };
@@ -268,6 +271,7 @@ const ProductFormInner = () => {
 
     const cleanedData = {
       ...formData,
+      slug: cleanSlug(formData.slug || formData.name),
       costPrice: formData.costPrice === "" ? 0 : Number(formData.costPrice),
       regularPrice: formData.regularPrice === "" ? 0 : Number(formData.regularPrice),
       salePrice: formData.salePrice === "" ? 0 : Number(formData.salePrice),

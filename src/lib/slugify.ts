@@ -1,0 +1,19 @@
+/**
+ * Clean slug generator:
+ * - Converts to lowercase and trims
+ * - Replaces '&' with '-'
+ * - Replaces any non-alphanumeric chars with a dash '-'
+ * - Collapses multiple consecutive dashes into a single dash
+ * - Trims dashes from the start and end
+ */
+export function cleanSlug(text: string): string {
+  if (!text) return "";
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, "-")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}

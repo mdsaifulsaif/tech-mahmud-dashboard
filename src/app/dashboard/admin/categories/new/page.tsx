@@ -19,6 +19,7 @@ import {
     useGetCategoriesQuery
 } from '@/redux/api/categoryApi';
 import { toast } from 'react-hot-toast';
+import { cleanSlug } from '@/lib/slugify';
 
 const CategoryFormInner = () => {
     const router = useRouter();
@@ -82,11 +83,16 @@ const CategoryFormInner = () => {
             setFormData(prev => ({ ...prev, [name]: value }));
         }
 
-        // Auto-generate slug from name if not editing slug manually
+        // Auto-generate clean slug from name if not editing slug manually
         if (name === 'name' && !isEditing) {
             setFormData(prev => ({
                 ...prev,
-                slug: value.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')
+                slug: cleanSlug(value)
+            }));
+        } else if (name === 'slug') {
+            setFormData(prev => ({
+                ...prev,
+                slug: cleanSlug(value)
             }));
         }
     };
@@ -96,7 +102,8 @@ const CategoryFormInner = () => {
 
         // FormData ব্যবহার করে ডাটা পাঠানো হচ্ছে
         const data = new FormData();
-        Object.entries(formData).forEach(([key, value]) => {
+        const safeSlug = cleanSlug(formData.slug || formData.name);
+        Object.entries({ ...formData, slug: safeSlug }).forEach(([key, value]) => {
             if (value !== null && value !== undefined && value !== '') {
                 data.append(key, value as any);
             }
