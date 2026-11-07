@@ -35,7 +35,6 @@ import {
   FiMail,
   FiRepeat,
   FiTarget,
-  FiMessageSquare,
   FiLayout,
 } from "react-icons/fi";
 import { useSocket } from "@/lib/socket";
@@ -96,7 +95,6 @@ const menuItems = [
     ],
   },
   { name: "Marketing & Pixels", href: "/dashboard/admin/marketing", icon: FiTarget, badge: "CAPI", badgeColor: "bg-purple-600" },
-  { name: "Live Chat", href: "/dashboard/admin/chat", icon: FiMessageSquare, badge: "Live" as string | null, badgeColor: "bg-emerald-600" },
   { name: "Analytics", href: "/dashboard/admin/analytics", icon: FiBarChart2, badge: null as string | null },
   { name: "Complaints", href: "/dashboard/admin/complaints", icon: FiAlertCircle, badge: null as string | null },
   { name: "System Health", href: "/dashboard/admin/health", icon: FiActivity, badge: null as string | null },

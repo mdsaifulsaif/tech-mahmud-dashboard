@@ -20,7 +20,8 @@ import {
 } from 'react-icons/fi';
 import {
     useGetProductsQuery,
-    useDeleteProductMutation
+    useDeleteProductMutation,
+    useToggleProductFlagMutation,
 } from '@/redux/api/productApi';
 import { useGetCategoriesQuery } from '@/redux/api/categoryApi';
 import { toast } from 'react-hot-toast';
@@ -28,6 +29,8 @@ import { toast } from 'react-hot-toast';
 const ProductsPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
+    const [togglingInfo, setTogglingInfo] = useState<{ id: string; flag: string } | null>(null);
     const [showFilter, setShowFilter] = useState(false);
     const [filters, setFilters] = useState({
         status: '',
@@ -38,18 +41,46 @@ const ProductsPage = () => {
     const { data: productsData, isLoading, refetch } = useGetProductsQuery({
         searchTerm,
         page,
-        limit: 10,
+        limit,
         ...filters,
     });
 
     const { data: categoriesData } = useGetCategoriesQuery({});
     const [deleteProduct] = useDeleteProductMutation();
+    const [toggleProductFlag] = useToggleProductFlagMutation();
 
     const products = productsData?.data || [];
     const meta = productsData?.meta || {};
     const categories = categoriesData?.data || [];
 
+    const totalCount = meta.total || products.length;
+    const totalPages = meta.totalPage || Math.max(1, Math.ceil(totalCount / limit));
+
     const activeFiltersCount = Object.values(filters).filter(Boolean).length;
+
+    const handleToggleFlag = async (
+        id: string,
+        flag: "isFeatured" | "isNewCollection" | "isTrending",
+        currentValue: boolean,
+        productName: string
+    ) => {
+        setTogglingInfo({ id, flag });
+        try {
+            await toggleProductFlag({ id, flag }).unwrap();
+            const flagNameMap = {
+                isFeatured: "Featured Products",
+                isNewCollection: "New Collection",
+                isTrending: "Trending Products",
+            };
+            toast.success(
+                `${productName} is now ${!currentValue ? "added to" : "removed from"} ${flagNameMap[flag]}`
+            );
+        } catch (error: any) {
+            toast.error(error?.data?.message || `Failed to update ${flag}`);
+        } finally {
+            setTogglingInfo(null);
+        }
+    };
 
     const handleFilterChange = (key: string, value: string) => {
         setFilters(prev => ({ ...prev, [key]: value }));
@@ -259,6 +290,9 @@ const ProductsPage = () => {
                                         <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Stock</th>
                                         <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Type</th>
                                         <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th className="px-4 py-4 text-xs font-bold text-blue-600 uppercase tracking-wider text-center">Featured</th>
+                                        <th className="px-4 py-4 text-xs font-bold text-[#FF5A5A] uppercase tracking-wider text-center">New Collection</th>
+                                        <th className="px-4 py-4 text-xs font-bold text-purple-600 uppercase tracking-wider text-center">Trending</th>
                                         <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
@@ -355,6 +389,84 @@ const ProductsPage = () => {
                                                 </span>
                                             </td>
 
+                                            {/* Featured Toggle */}
+                                            <td className="px-4 py-4 text-center">
+                                                <button
+                                                    type="button"
+                                                    disabled={togglingInfo?.id === product._id && togglingInfo?.flag === "isFeatured"}
+                                                    onClick={() => handleToggleFlag(product._id, "isFeatured", !!product.isFeatured, product.name)}
+                                                    className="inline-flex items-center gap-1.5 cursor-pointer select-none group"
+                                                    title={product.isFeatured ? "Click to remove from Featured" : "Click to mark as Featured"}
+                                                >
+                                                    <span
+                                                        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                                                            product.isFeatured ? 'bg-blue-600' : 'bg-gray-200'
+                                                        } ${togglingInfo?.id === product._id && togglingInfo?.flag === "isFeatured" ? 'opacity-50 cursor-wait' : ''}`}
+                                                    >
+                                                        <span
+                                                            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition duration-200 ease-in-out ${
+                                                                product.isFeatured ? 'translate-x-4' : 'translate-x-0'
+                                                            }`}
+                                                        />
+                                                    </span>
+                                                    <span className={`text-[11px] font-bold ${product.isFeatured ? 'text-blue-600' : 'text-gray-400'}`}>
+                                                        {product.isFeatured ? 'Yes' : 'No'}
+                                                    </span>
+                                                </button>
+                                            </td>
+
+                                            {/* New Collection Toggle */}
+                                            <td className="px-4 py-4 text-center">
+                                                <button
+                                                    type="button"
+                                                    disabled={togglingInfo?.id === product._id && togglingInfo?.flag === "isNewCollection"}
+                                                    onClick={() => handleToggleFlag(product._id, "isNewCollection", !!product.isNewCollection, product.name)}
+                                                    className="inline-flex items-center gap-1.5 cursor-pointer select-none group"
+                                                    title={product.isNewCollection ? "Click to remove from New Collection" : "Click to add to New Collection"}
+                                                >
+                                                    <span
+                                                        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                                                            product.isNewCollection ? 'bg-[#FF5A5A]' : 'bg-gray-200'
+                                                        } ${togglingInfo?.id === product._id && togglingInfo?.flag === "isNewCollection" ? 'opacity-50 cursor-wait' : ''}`}
+                                                    >
+                                                        <span
+                                                            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition duration-200 ease-in-out ${
+                                                                product.isNewCollection ? 'translate-x-4' : 'translate-x-0'
+                                                            }`}
+                                                        />
+                                                    </span>
+                                                    <span className={`text-[11px] font-bold ${product.isNewCollection ? 'text-[#FF5A5A]' : 'text-gray-400'}`}>
+                                                        {product.isNewCollection ? 'Yes' : 'No'}
+                                                    </span>
+                                                </button>
+                                            </td>
+
+                                            {/* Trending Toggle */}
+                                            <td className="px-4 py-4 text-center">
+                                                <button
+                                                    type="button"
+                                                    disabled={togglingInfo?.id === product._id && togglingInfo?.flag === "isTrending"}
+                                                    onClick={() => handleToggleFlag(product._id, "isTrending", !!product.isTrending, product.name)}
+                                                    className="inline-flex items-center gap-1.5 cursor-pointer select-none group"
+                                                    title={product.isTrending ? "Click to remove from Trending" : "Click to add to Trending"}
+                                                >
+                                                    <span
+                                                        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                                                            product.isTrending ? 'bg-purple-600' : 'bg-gray-200'
+                                                        } ${togglingInfo?.id === product._id && togglingInfo?.flag === "isTrending" ? 'opacity-50 cursor-wait' : ''}`}
+                                                    >
+                                                        <span
+                                                            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition duration-200 ease-in-out ${
+                                                                product.isTrending ? 'translate-x-4' : 'translate-x-0'
+                                                            }`}
+                                                        />
+                                                    </span>
+                                                    <span className={`text-[11px] font-bold ${product.isTrending ? 'text-purple-600' : 'text-gray-400'}`}>
+                                                        {product.isTrending ? 'Yes' : 'No'}
+                                                    </span>
+                                                </button>
+                                            </td>
+
                                             {/* Actions */}
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -384,32 +496,80 @@ const ProductsPage = () => {
                         </div>
 
                         {/* Pagination */}
-                        {meta.totalPage > 1 && (
-                            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
-                                <p className="text-sm text-gray-500">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+                            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                                <span>
                                     Showing{' '}
-                                    <span className="font-semibold text-gray-700">{(page - 1) * 10 + 1}–{Math.min(page * 10, meta.total)}</span>
+                                    <span className="font-semibold text-gray-700">
+                                        {totalCount > 0 ? (page - 1) * limit + 1 : 0}–{Math.min(page * limit, totalCount)}
+                                    </span>
                                     {' '}of{' '}
-                                    <span className="font-semibold text-gray-700">{meta.total}</span> products
-                                </p>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                                        disabled={page === 1}
-                                        className="px-4 py-2 text-sm border border-gray-200 rounded-md hover:bg-gray-50 disabled:opacity-40 transition-all"
+                                    <span className="font-semibold text-gray-700">{totalCount}</span> products
+                                </span>
+                                <div className="flex items-center gap-1.5 ml-2">
+                                    <span className="text-xs text-gray-400">Per page:</span>
+                                    <select
+                                        value={limit}
+                                        onChange={(e) => {
+                                            setLimit(Number(e.target.value));
+                                            setPage(1);
+                                        }}
+                                        className="px-2 py-1 bg-white border border-gray-200 rounded text-xs font-semibold text-gray-700 outline-none focus:border-[#2563EB]"
                                     >
-                                        Previous
-                                    </button>
-                                    <button
-                                        onClick={() => setPage(p => p + 1)}
-                                        disabled={page >= meta.totalPage}
-                                        className="px-4 py-2 text-sm bg-[#2563EB] text-white rounded-md hover:bg-[#1D4ED8] disabled:opacity-40 transition-all"
-                                    >
-                                        Next
-                                    </button>
+                                        <option value={10}>10</option>
+                                        <option value={20}>20</option>
+                                        <option value={50}>50</option>
+                                        <option value={100}>100</option>
+                                    </select>
                                 </div>
                             </div>
-                        )}
+
+                            <div className="flex items-center gap-1.5">
+                                <button
+                                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                    disabled={page === 1}
+                                    className="px-3 py-1.5 text-xs font-semibold border border-gray-200 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                >
+                                    Previous
+                                </button>
+
+                                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                                    .filter(
+                                        (p) =>
+                                            p === 1 ||
+                                            p === totalPages ||
+                                            (p >= page - 2 && p <= page + 2)
+                                    )
+                                    .map((p, idx, arr) => {
+                                        const prev = arr[idx - 1];
+                                        return (
+                                            <React.Fragment key={p}>
+                                                {prev && p - prev > 1 && (
+                                                    <span className="px-1 text-gray-400 text-xs">...</span>
+                                                )}
+                                                <button
+                                                    onClick={() => setPage(p)}
+                                                    className={`min-w-[32px] h-8 text-xs font-bold rounded-lg transition-all ${
+                                                        page === p
+                                                            ? 'bg-[#2563EB] text-white shadow-sm'
+                                                            : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                                                    }`}
+                                                >
+                                                    {p}
+                                                </button>
+                                            </React.Fragment>
+                                        );
+                                    })}
+
+                                <button
+                                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                                    disabled={page >= totalPages}
+                                    className="px-3 py-1.5 text-xs font-semibold border border-gray-200 rounded-lg bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
                     </>
                 ) : (
                     <div className="p-20 text-center">

@@ -33,10 +33,10 @@ const ProductSidebarPanel = ({ formData, onChange }: Props) => {
           <FiSettings /> Promotion
         </h3>
         {[
-          { key: "isFeatured", label: "Featured Product", color: "bg-yellow-500" },
+          { key: "isFeatured", label: "Featured Product", color: "bg-blue-600" },
           { key: "isNewCollection", label: "New Collection (Homepage)", color: "bg-[#FF5A5A]" },
+          { key: "isTrending", label: "Trending Product", color: "bg-purple-600" },
           { key: "isOnSale", label: "On Sale Mode", color: "bg-rose-500" },
-          { key: "isNew", label: "New Arrival Badge", color: "bg-emerald-500" },
         ].map((item) => (
           <label key={item.key} className="flex items-center justify-between p-3 bg-gray-50/50 rounded border border-gray-100 cursor-pointer">
             <span className="text-xs font-bold text-gray-600">{item.label}</span>

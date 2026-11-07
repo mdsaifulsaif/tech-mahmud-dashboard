@@ -60,7 +60,7 @@ const ProductFormInner = () => {
     status: "active",
     isFeatured: false,
     isNewCollection: false,
-    isNew: true,
+    isTrending: false,
     isOnSale: false,
     lowdown: [],
     specifications: [],
@@ -112,6 +112,9 @@ const ProductFormInner = () => {
         gadgetAttributes: prod.gadgetAttributes || prev.gadgetAttributes,
         warranty: prod.warranty || prev.warranty,
         lowdown: prod.lowdown || [],
+        isTrending: !!prod.isTrending,
+        isNewCollection: !!prod.isNewCollection,
+        isFeatured: !!prod.isFeatured,
       }));
       if (prod.thumbnail) setThumbnailPreview(prod.thumbnail);
       if (prod.images) setGalleryPreviews(prod.images);

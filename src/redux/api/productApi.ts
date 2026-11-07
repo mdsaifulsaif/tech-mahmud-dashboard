@@ -197,6 +197,20 @@ export const productApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Products"],
     }),
+    toggleProductFlag: builder.mutation({
+      query: ({
+        id,
+        flag,
+      }: {
+        id: string;
+        flag: "isFeatured" | "isNewCollection" | "isTrending";
+      }) => ({
+        url: `/products/${id}/toggle-flag`,
+        method: "PATCH",
+        body: { flag },
+      }),
+      invalidatesTags: ["Products"],
+    }),
   }),
 });
 
@@ -210,4 +224,5 @@ export const {
   useUpdateStockMutation,
   useBulkUpdateStatusMutation,
   useBulkDeleteMutation,
+  useToggleProductFlagMutation,
 } = productApi;
