@@ -1,21 +1,14 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { baseApi } from './baseApi';
 
-export const storeSettingApi = createApi({
-  reducerPath: 'storeSettingApi',
-  baseQuery: fetchBaseQuery({ 
-    baseUrl: '/api' // আপনার API-এর বেস ইউআরএল
-  }),
-  tagTypes: ['StoreSetting'],
+export const storeSettingApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // সেটিংস ফেচ করা
     getStoreSettings: builder.query<any, void>({
       query: () => '/settings',
       providesTags: ['StoreSetting'],
     }),
-    // সেটিংস আপডেট করা (PATCH)
-    updateStoreSettings: builder.mutation<any, Partial<any>>({
+    updateStoreSettings: builder.mutation<any, FormData | any>({
       query: (data) => ({
-        url: '/settings',
+        url: '/settings/update',
         method: 'PATCH',
         body: data,
       }),

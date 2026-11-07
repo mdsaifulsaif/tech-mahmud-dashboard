@@ -89,7 +89,6 @@ import { Tab } from './components/Tab';
 import { ShippingSettings } from './components/ShippingSettings';
 import { useGetAllShippingConfigsQuery, useUpdateShippingConfigMutation } from '@/redux/api/shippingPriceApi';
 import { PaymentSettings } from './components/PaymentSettings';
-import { NotificationSettings } from './components/NotificationSettings';
 import { SecuritySettings } from './components/SecuritySettings';
 import { GeneralSettings } from './components/GeneralSettings';
 
@@ -98,7 +97,7 @@ export default function SettingsPage() {
   const { data: apiResponse, isLoading, refetch } = useGetAllShippingConfigsQuery({});
   const [updateShippingConfig, { isLoading: isUpdating }] = useUpdateShippingConfigMutation();
   
-  const [activeTab, setActiveTab] = useState('shipping');
+  const [activeTab, setActiveTab] = useState('general');
   
   const [shippingConfigs, setShippingConfigs] = useState({
     local: { type: "local", tiers: [], isActive: true },
@@ -144,7 +143,6 @@ export default function SettingsPage() {
     { id: 'general', label: 'General', icon: FiGlobe },
     { id: 'shipping', label: 'Shipping', icon: FiTruck },
     { id: 'payment', label: 'Payment', icon: FiCreditCard },
-    { id: 'notifications', label: 'Notifications', icon: FiMail },
     { id: 'security', label: 'Security', icon: FiShield },
   ];
 
@@ -178,7 +176,7 @@ export default function SettingsPage() {
             <ShippingSettings />
           )}
           {activeTab === 'payment' && <PaymentSettings />}
-           {activeTab === 'notifications' && <NotificationSettings />}          {activeTab === 'security' && <SecuritySettings />}
+          {activeTab === 'security' && <SecuritySettings />}
         </div>
       </div>
     </div>
